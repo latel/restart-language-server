@@ -1,9 +1,7 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
+let watchers: vscode.FileSystemWatcher[] = [];
+
 export function activate(context: vscode.ExtensionContext) {
 	const extensionName = 'restart-language-server';
 
@@ -21,24 +19,27 @@ export function activate(context: vscode.ExtensionContext) {
 	}
 
 	for (const it of includes) {
-		const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(vscode.workspace.workspaceFolders[0], it));
-		watcher.onDidCreate((event) => {
-			console.log('file created:', event.fsPath, 'restarting typescript language server');
-			vscode.commands.executeCommand('typescript.restartTsServer');
-		});
-		watcher.onDidDelete((event) => {
-			console.log('file deleted:', event.fsPath, 'restarting typescript language server');
-			vscode.commands.executeCommand('typescript.restartTsServer');
-		});
-		context.subscriptions.push(watcher);
-		console.log('watched', it);
+		for (const workspace of vscode.workspace.workspaceFolders) {
+			const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspace, it));
+			watchers.push(watcher);
+			watcher.onDidCreate((event) => {
+				console.log('file created:', event.fsPath, 'restarting typescript language server');
+				vscode.commands.executeCommand('typescript.restartTsServer');
+			});
+			watcher.onDidDelete((event) => {
+				console.log('file deleted:', event.fsPath, 'restarting typescript language server');
+				vscode.commands.executeCommand('typescript.restartTsServer');
+			});
+			context.subscriptions.push(watcher);
+		}
 	}
-		
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
 	console.log('"restart-language-server" is now active!');
 }
 
-// This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() {
+	let watcher;
+	while (watcher = watchers.shift()) {
+		watcher.dispose();
+	}
+}
