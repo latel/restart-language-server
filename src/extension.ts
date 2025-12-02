@@ -40,6 +40,10 @@ export function activate(context: vscode.ExtensionContext) {
 				console.log('file created:', event.fsPath, 'scheduling typescript language server restart');
 				debouncedRestartTsServer();
 			});
+			watcher.onDidChange((event) => {
+				console.log('file changed:', event.fsPath, 'scheduling typescript language server restart');
+				debouncedRestartTsServer();
+			});
 			watcher.onDidDelete((event) => {
 				console.log('file deleted:', event.fsPath, 'scheduling typescript language server restart');
 				debouncedRestartTsServer();

@@ -4,5 +4,5 @@ This extensions watches changes within specific folders and files, and then rest
 
 This extension contributes the following settings:
 
-* `okwang.restart-language-server.enable`: Enable/disable this extension.
-* `okwang.restart-language-server.includes`: Watched files and directories.
+* `restart-language-server.enable`: Enable/disable this extension.
+* `restart-language-server.includes`: Watched files and directories.

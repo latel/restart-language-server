@@ -3,7 +3,7 @@
   "publisher": "okwang",
   "displayName": "restart-language-server",
   "description": "watch file and dirs, then restart typescript language server automatically",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "engines": {
     "vscode": "^1.76.0"
   },
@@ -13,6 +13,26 @@
   "activationEvents": [
     "onStartupFinished"
   ],
+  "contributes": {
+    "configuration": {
+      "title": "restart-language-server",
+      "properties": {
+        "restart-language-server.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable this extension."
+        },
+        "restart-language-server.includes": {
+          "type": "array",
+          "default": [],
+          "description": "Watched files and directories.",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
   "main": "./dist/extension.js",
   "scripts": {
     "vscode:prepublish": "npm run package",
