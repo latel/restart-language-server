@@ -12,4 +12,9 @@ suite('Extension Test Suite', () => {
 		assert.strictEqual(-1, [1, 2, 3].indexOf(5));
 		assert.strictEqual(-1, [1, 2, 3].indexOf(0));
 	});
+
+	test('Extension should be present', () => {
+		const extension = vscode.extensions.getExtension('okwang.restart-language-server');
+		assert.ok(extension, 'Extension should be registered');
+	});
 });

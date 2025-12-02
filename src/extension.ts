@@ -1,6 +1,20 @@
 import * as vscode from 'vscode';
 
 let watchers: vscode.FileSystemWatcher[] = [];
+let restartTimer: NodeJS.Timeout | undefined;
+
+const DEBOUNCE_DELAY_MS = 10000; // 10 seconds
+
+function debouncedRestartTsServer() {
+	if (restartTimer) {
+		clearTimeout(restartTimer);
+	}
+	restartTimer = setTimeout(() => {
+		console.log('restarting typescript language server');
+		vscode.commands.executeCommand('typescript.restartTsServer');
+		restartTimer = undefined;
+	}, DEBOUNCE_DELAY_MS);
+}
 
 export function activate(context: vscode.ExtensionContext) {
 	const extensionName = 'restart-language-server';
@@ -23,12 +37,12 @@ export function activate(context: vscode.ExtensionContext) {
 			const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspace, it));
 			watchers.push(watcher);
 			watcher.onDidCreate((event) => {
-				console.log('file created:', event.fsPath, 'restarting typescript language server');
-				vscode.commands.executeCommand('typescript.restartTsServer');
+				console.log('file created:', event.fsPath, 'scheduling typescript language server restart');
+				debouncedRestartTsServer();
 			});
 			watcher.onDidDelete((event) => {
-				console.log('file deleted:', event.fsPath, 'restarting typescript language server');
-				vscode.commands.executeCommand('typescript.restartTsServer');
+				console.log('file deleted:', event.fsPath, 'scheduling typescript language server restart');
+				debouncedRestartTsServer();
 			});
 			context.subscriptions.push(watcher);
 		}
@@ -38,6 +52,10 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
+	if (restartTimer) {
+		clearTimeout(restartTimer);
+		restartTimer = undefined;
+	}
 	let watcher;
 	while (watcher = watchers.shift()) {
 		watcher.dispose();
