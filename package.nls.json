@@ -1,0 +1,8 @@
+{
+  "displayName": "Restart Language Server",
+  "description": "Watch files and directories, then restart language servers automatically",
+  "config.title": "restart-language-server",
+  "config.enable.description": "Enable/disable this extension.",
+  "config.includes.description": "Watched files and directories.",
+  "config.lsRestartCommands.description": "VS Code commands to execute when a restart is triggered."
+}

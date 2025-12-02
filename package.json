@@ -1,9 +1,15 @@
 {
   "name": "restart-language-server",
   "publisher": "okwang",
-  "displayName": "restart-language-server",
-  "description": "watch file and dirs, then restart typescript language server automatically",
+  "displayName": "%displayName%",
+  "description": "%description%",
   "version": "0.0.4",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/latel/restart-language-server.git"
+  },
+  "icon": "icon.png",
   "engines": {
     "vscode": "^1.76.0"
   },
@@ -15,17 +21,27 @@
   ],
   "contributes": {
     "configuration": {
-      "title": "restart-language-server",
+      "title": "%config.title%",
       "properties": {
         "restart-language-server.enable": {
           "type": "boolean",
           "default": true,
-          "description": "Enable/disable this extension."
+          "description": "%config.enable.description%"
         },
         "restart-language-server.includes": {
           "type": "array",
           "default": [],
-          "description": "Watched files and directories.",
+          "description": "%config.includes.description%",
+          "items": {
+            "type": "string"
+          }
+        },
+        "restart-language-server.lsRestartCommands": {
+          "type": "array",
+          "default": [
+            "typescript.restartTsServer"
+          ],
+          "description": "%config.lsRestartCommands.description%",
           "items": {
             "type": "string"
           }
