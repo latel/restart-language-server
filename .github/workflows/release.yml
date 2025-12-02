@@ -48,6 +48,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Publish to VS Code Marketplace
+        run: vsce publish --packagePath *.vsix -p ${{ secrets.VSCE_PAT }}
+
       # 如果要发布到 VS Code Marketplace，取消下面的注释并配置 VSCE_PAT secret
       # - name: Publish to VS Code Marketplace
       #   run: vsce publish -p ${{ secrets.VSCE_PAT }}
