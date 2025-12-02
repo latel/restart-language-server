@@ -3,7 +3,7 @@
   "publisher": "okwang",
   "displayName": "restart-language-server",
   "description": "watch file and dirs, then restart typescript language server automatically",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.76.0"
   },
