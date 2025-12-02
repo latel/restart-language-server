@@ -3,6 +3,8 @@ import * as vscode from 'vscode';
 let watchers: vscode.FileSystemWatcher[] = [];
 let restartTimer: NodeJS.Timeout | undefined;
 
+const DEBOUNCE_DELAY_MS = 10000; // 10 seconds
+
 function debouncedRestartTsServer() {
 	if (restartTimer) {
 		clearTimeout(restartTimer);
@@ -11,7 +13,7 @@ function debouncedRestartTsServer() {
 		console.log('restarting typescript language server');
 		vscode.commands.executeCommand('typescript.restartTsServer');
 		restartTimer = undefined;
-	}, 10000); // 10 seconds debounce
+	}, DEBOUNCE_DELAY_MS);
 }
 
 export function activate(context: vscode.ExtensionContext) {
