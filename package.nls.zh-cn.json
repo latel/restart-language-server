@@ -3,6 +3,7 @@
   "description": "监听文件和目录，自动重启语言服务器",
   "config.title": "restart-language-server",
   "config.enable.description": "启用/禁用此扩展。",
+  "config.debug.description": "开启详细调试日志（文件事件和监听器细节）。",
   "config.includes.description": "要监听的文件和目录。",
   "config.lsRestartCommands.description": "触发重启时要执行的 VS Code 命令列表。"
 }

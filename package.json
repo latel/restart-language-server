@@ -30,9 +30,18 @@
           "default": true,
           "description": "%config.enable.description%"
         },
+        "restart-language-server.debug": {
+          "type": "boolean",
+          "default": false,
+          "description": "%config.debug.description%"
+        },
         "restart-language-server.includes": {
           "type": "array",
-          "default": [],
+          "default": [
+            "package.json",
+            "package-lock.json",
+            "pnpm-lock.yaml"
+          ],
           "description": "%config.includes.description%",
           "items": {
             "type": "string"

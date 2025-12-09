@@ -3,6 +3,7 @@
   "description": "Watch files and directories, then restart language servers automatically",
   "config.title": "restart-language-server",
   "config.enable.description": "Enable/disable this extension.",
+  "config.debug.description": "Enable verbose debug logging (file events and watcher details).",
   "config.includes.description": "Watched files and directories.",
   "config.lsRestartCommands.description": "VS Code commands to execute when a restart is triggered."
 }
