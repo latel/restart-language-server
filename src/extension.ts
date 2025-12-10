@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 
 let watchers: vscode.FileSystemWatcher[] = [];
 let restartTimer: NodeJS.Timeout | undefined;
@@ -13,6 +14,13 @@ type FileEventKind = 'created' | 'changed' | 'deleted';
 interface FileEventEntry {
 	kind: FileEventKind;
 	path: string;
+	info?: FileStatSnapshot;
+}
+
+interface FileStatSnapshot {
+	size: number;
+	mtimeMs: number;
+	ctimeMs: number;
 }
 
 const pendingEvents: FileEventEntry[] = [];
@@ -38,6 +46,35 @@ function formatPath(fsPath: string) {
 	return vscode.workspace.asRelativePath(fsPath, false) || fsPath;
 }
 
+function captureFileStat(fsPath: string): FileStatSnapshot | undefined {
+	try {
+		const stat = fs.statSync(fsPath);
+		return {
+			size: stat.size,
+			mtimeMs: stat.mtimeMs,
+			ctimeMs: stat.ctimeMs,
+		};
+	} catch (err) {
+		logDebug(t('Stat failed for "{0}": {1}', formatPath(fsPath), String(err)));
+		return undefined;
+	}
+}
+
+function formatFileInfo(info?: FileStatSnapshot) {
+	if (!info) {
+		return t('no stat info');
+	}
+	return t('size={0} bytes, mtime={1}, ctime={2}', info.size, new Date(info.mtimeMs).toISOString(), new Date(info.ctimeMs).toISOString());
+}
+
+function describeEvent(evt: FileEventEntry) {
+	const base = `${formatPath(evt.path)} -> ${evt.kind}`;
+	if (evt.info) {
+		return `${base} (${formatFileInfo(evt.info)})`;
+	}
+	return base;
+}
+
 function debouncedRestartTsServer() {
 	if (restartTimer) {
 		clearTimeout(restartTimer);
@@ -55,16 +92,17 @@ async function restartLanguageServers() {
 		deleted: t('deleted'),
 	};
 
-	logDebug(t('Restart triggered with {0} pending event(s)', pendingEvents.length));
+	const eventsToReport = pendingEvents.splice(0, pendingEvents.length);
+	logDebug(t('Restart triggered with {0} pending event(s)', eventsToReport.length));
 
 	const lines: string[] = [];
 
-	if (pendingEvents.length > 0) {
+	if (eventsToReport.length > 0) {
 		lines.push(t('Files changed'));
-		for (const evt of pendingEvents) {
+		for (const evt of eventsToReport) {
 			lines.push(`- ${formatPath(evt.path)} ${kindLabel[evt.kind]}`);
 		}
-		logDebug(t('Pending events detail:\n{0}', pendingEvents.map((evt) => `${formatPath(evt.path)} -> ${evt.kind}`).join('\n')));
+		logDebug(t('Pending events detail:\n{0}', eventsToReport.map((evt) => describeEvent(evt)).join('\n')));
 	} else {
 		lines.push(t('No file changes recorded'));
 	}
@@ -98,10 +136,8 @@ async function restartLanguageServers() {
 				}
 			}
 		};
-		await Promise.all([minDuration, commandExecution()]);
-	});
-
-	pendingEvents.splice(0, pendingEvents.length);
+			await Promise.all([minDuration, commandExecution()]);
+		});
 }
 
 export function activate(context: vscode.ExtensionContext) {
@@ -137,28 +173,32 @@ export function activate(context: vscode.ExtensionContext) {
 
 	for (const it of includes) {
 		for (const workspace of vscode.workspace.workspaceFolders) {
-			const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspace, it));
-			watchers.push(watcher);
-			log(t('Watching "{0}" in workspace "{1}"', it, workspace.name ?? workspace.uri.fsPath));
-			logDebug(t('Watcher ready for pattern "{0}" at workspace root {1}', it, workspace.uri.fsPath));
-			watcher.onDidCreate((event) => {
-				pendingEvents.push({ kind: 'created', path: event.fsPath });
-				log(t('File created: {0}; scheduling language server restart in {1}s', event.fsPath, DEBOUNCE_DELAY_MS / 1000));
-				logDebug(t('Queued event: {0} -> {1}; pending={2}', 'created', formatPath(event.fsPath), pendingEvents.length));
-				debouncedRestartTsServer();
-			});
-			watcher.onDidChange((event) => {
-				pendingEvents.push({ kind: 'changed', path: event.fsPath });
-				log(t('File changed: {0}; scheduling language server restart in {1}s', event.fsPath, DEBOUNCE_DELAY_MS / 1000));
-				logDebug(t('Queued event: {0} -> {1}; pending={2}', 'changed', formatPath(event.fsPath), pendingEvents.length));
-				debouncedRestartTsServer();
-			});
-			watcher.onDidDelete((event) => {
-				pendingEvents.push({ kind: 'deleted', path: event.fsPath });
-				log(t('File deleted: {0}; scheduling language server restart in {1}s', event.fsPath, DEBOUNCE_DELAY_MS / 1000));
-				logDebug(t('Queued event: {0} -> {1}; pending={2}', 'deleted', formatPath(event.fsPath), pendingEvents.length));
-				debouncedRestartTsServer();
-			});
+				const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspace, it));
+				watchers.push(watcher);
+				log(t('Watching "{0}" in workspace "{1}"', it, workspace.name ?? workspace.uri.fsPath));
+				logDebug(t('Watcher ready for pattern "{0}" at workspace root {1}', it, workspace.uri.fsPath));
+				watcher.onDidCreate((event) => {
+					const info = captureFileStat(event.fsPath);
+					pendingEvents.push({ kind: 'created', path: event.fsPath, info });
+					log(t('File created: {0}; scheduling language server restart in {1}s', event.fsPath, DEBOUNCE_DELAY_MS / 1000));
+					logDebug(t('Queued event: {0} -> {1}; pending={2}', 'created', formatPath(event.fsPath), pendingEvents.length));
+					logDebug(t('Event info: {0}', formatFileInfo(info)));
+					debouncedRestartTsServer();
+				});
+				watcher.onDidChange((event) => {
+					const info = captureFileStat(event.fsPath);
+					pendingEvents.push({ kind: 'changed', path: event.fsPath, info });
+					log(t('File changed: {0}; scheduling language server restart in {1}s', event.fsPath, DEBOUNCE_DELAY_MS / 1000));
+					logDebug(t('Queued event: {0} -> {1}; pending={2}', 'changed', formatPath(event.fsPath), pendingEvents.length));
+					logDebug(t('Event info: {0}', formatFileInfo(info)));
+					debouncedRestartTsServer();
+				});
+				watcher.onDidDelete((event) => {
+			pendingEvents.push({ kind: 'deleted', path: event.fsPath });
+			log(t('File deleted: {0}; scheduling language server restart in {1}s', event.fsPath, DEBOUNCE_DELAY_MS / 1000));
+			logDebug(t('Queued event: {0} -> {1}; pending={2}', 'deleted', formatPath(event.fsPath), pendingEvents.length));
+			debouncedRestartTsServer();
+		});
 			context.subscriptions.push(watcher);
 		}
 	}
