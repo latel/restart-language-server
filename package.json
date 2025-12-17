@@ -70,9 +70,12 @@
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "test": "node ./out/test/runTest.js",
+    "changeset": "pnpm exec changeset",
+    "changeset:version": "pnpm exec changeset version && pnpm exec changeset tag"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.8",
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.1",
     "@types/node": "16.x",

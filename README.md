@@ -6,7 +6,7 @@ Automatically restart language servers (like TypeScript/Vue/ESLint) when specifi
 
 ## Features
 
-- **Auto Restart**: Watches for file changes in your workspace and automatically triggers restart commands.
+- **Auto Restart**: Watches for file changes, checks file hashes, and only restarts when contents actually change.
 - **Configurable Watch Patterns**: Define exactly which files or folders should trigger a restart using glob patterns.
 - **Custom Commands**: Configure which VS Code commands to execute (e.g., `typescript.restartTsServer`, `eslint.restart`).
 - **Non-intrusive Notifications**: Shows a subtle progress bar notification when restarting, keeping your workflow uninterrupted. Detailed logs are available in the Output channel.
