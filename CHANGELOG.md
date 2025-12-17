@@ -1,5 +1,17 @@
 # Change Log
 
+## 0.0.12
+
+### Patch Changes
+
+- feat: update docs
+
+## 0.0.11
+
+### Patch Changes
+
+- feat: update
+
 ## 0.0.10
 
 ### Patch Changes

@@ -6,7 +6,7 @@
 
 1. **为每个改动添加 Changeset**
    ```bash
-   pnpm run changeset
+   pnpm exec changeset
    ```
    根据提示选择影响范围，填写变更说明（建议中英文简述）。
 
@@ -20,21 +20,25 @@
 
 1. **应用版本与生成 changelog**
    ```bash
-   pnpm run changeset:version
+   pnpm exec changeset version
    ```
    作用：
    - 根据待发布的 changeset 自动提升 `package.json` 版本号
    - 更新 `CHANGELOG.md`
    - 更新锁文件（`pnpm-lock.yaml`）
-   - 自动创建 `vX.Y.Z` Git tag
 
-2. **检查与提交发布前变更**
+2. **检查并提交发布前变更**（提交后再打 tag）
    ```bash
    git add package.json pnpm-lock.yaml CHANGELOG.md .changeset
    git commit -m "chore: release vX.Y.Z"
    ```
 
-3. **推送**（触发 GitHub Actions 发布）
+3. **打 Tag**（提交之后再执行）
+   ```bash
+   pnpm exec changeset tag
+   ```
+
+4. **推送**（触发 GitHub Actions 发布）
    ```bash
    git push origin main --tags
    ```
@@ -57,6 +61,8 @@
 
 ## 快速命令清单
 
-- 新建 changeset：`pnpm run changeset`
-- 应用版本 & 生成 changelog（含 tag）：`pnpm run changeset:version`
+- 新建 changeset：`pnpm exec changeset`
+- 应用版本 & 生成 changelog：`pnpm exec changeset version`
+- 提交版本变更：`git add package.json pnpm-lock.yaml CHANGELOG.md .changeset && git commit -m "chore: release vX.Y.Z"`
+- 打 tag：`pnpm exec changeset tag`
 - 发布（触发 CI）：`git push origin main --tags`
