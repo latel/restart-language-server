@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.0.10
+
+### Patch Changes
+
+- 9c830e2: feat: update README and documentation for improved auto-restart behavior and versioning process
+
 ## [0.0.7]
 
 - Add optional `restart-language-server.debug` flag for detailed watcher/event logging.
