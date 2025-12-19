@@ -72,11 +72,16 @@ function computeFileHash(fsPath: string): string | undefined {
 	}
 }
 
-function ensureContentChanged(fsPath: string, kind: Exclude<FileEventKind, 'deleted'>): boolean {
+interface ContentCheckResult {
+	shouldTrigger: boolean;
+	hash?: string;
+}
+
+function ensureContentChanged(fsPath: string, kind: Exclude<FileEventKind, 'deleted'>): ContentCheckResult {
 	const newHash = computeFileHash(fsPath);
 	if (!newHash) {
 		fileHashCache.delete(fsPath);
-		return true; // fall back to triggering when hash is unavailable
+		return { shouldTrigger: true, hash: undefined }; // fall back to triggering when hash is unavailable
 	}
 
 	const prevHash = fileHashCache.get(fsPath);
@@ -85,10 +90,10 @@ function ensureContentChanged(fsPath: string, kind: Exclude<FileEventKind, 'dele
 	if (prevHash && prevHash === newHash) {
 		log(t('Skip restart: {0} event but content unchanged for "{1}"', kind, formatPath(fsPath)));
 		logDebug(t('Skip {0}: no content change for "{1}" (hash={2})', kind, formatPath(fsPath), newHash));
-		return false;
+		return { shouldTrigger: false, hash: newHash };
 	}
 
-	return true;
+	return { shouldTrigger: true, hash: newHash };
 }
 
 function formatFileInfo(info?: FileStatSnapshot) {
@@ -178,15 +183,23 @@ async function preloadFileHashes(includes: string[]) {
 	}
 	let warmed = 0;
 	for (const pattern of includes) {
+		let matched = 0;
 		for (const folder of folders) {
 			const files = await vscode.workspace.findFiles(new vscode.RelativePattern(folder, pattern));
+			matched += files.length;
 			for (const file of files) {
 				const hash = computeFileHash(file.fsPath);
 				if (hash) {
 					fileHashCache.set(file.fsPath, hash);
 					warmed += 1;
+					log(t('Preloaded hash for "{0}": {1}', formatPath(file.fsPath), hash));
 				}
 			}
+		}
+		if (matched === 0) {
+			log(t('Preload: pattern "{0}" matched no files', pattern));
+		} else {
+			log(t('Preload: pattern "{0}" matched {1} file(s)', pattern, matched));
 		}
 	}
 	logDebug(t('Preloaded {0} file hash(es) on activation', warmed));
@@ -232,23 +245,25 @@ export async function activate(context: vscode.ExtensionContext) {
 			log(t('Watching "{0}" in workspace "{1}"', it, workspace.name ?? workspace.uri.fsPath));
 			logDebug(t('Watcher ready for pattern "{0}" at workspace root {1}', it, workspace.uri.fsPath));
 			watcher.onDidCreate((event) => {
-				if (!ensureContentChanged(event.fsPath, 'created')) {
+				const { shouldTrigger, hash } = ensureContentChanged(event.fsPath, 'created');
+				if (!shouldTrigger) {
 					return;
 				}
 				const info = captureFileStat(event.fsPath);
 				pendingEvents.push({ kind: 'created', path: event.fsPath, info });
-				log(t('File created: {0}; scheduling language server restart in {1}s', event.fsPath, DEBOUNCE_DELAY_MS / 1000));
+				log(t('File created: {0}; scheduling language server restart in {1}s; hash={2}', event.fsPath, DEBOUNCE_DELAY_MS / 1000, hash ?? t('unknown')));
 				logDebug(t('Queued event: {0} -> {1}; pending={2}', 'created', formatPath(event.fsPath), pendingEvents.length));
 				logDebug(t('Event info: {0}', formatFileInfo(info)));
 				debouncedRestartTsServer();
 			});
 			watcher.onDidChange((event) => {
-				if (!ensureContentChanged(event.fsPath, 'changed')) {
+				const { shouldTrigger, hash } = ensureContentChanged(event.fsPath, 'changed');
+				if (!shouldTrigger) {
 					return;
 				}
 				const info = captureFileStat(event.fsPath);
 				pendingEvents.push({ kind: 'changed', path: event.fsPath, info });
-				log(t('File changed: {0}; scheduling language server restart in {1}s', event.fsPath, DEBOUNCE_DELAY_MS / 1000));
+				log(t('File changed: {0}; scheduling language server restart in {1}s; hash={2}', event.fsPath, DEBOUNCE_DELAY_MS / 1000, hash ?? t('unknown')));
 				logDebug(t('Queued event: {0} -> {1}; pending={2}', 'changed', formatPath(event.fsPath), pendingEvents.length));
 				logDebug(t('Event info: {0}', formatFileInfo(info)));
 				debouncedRestartTsServer();
