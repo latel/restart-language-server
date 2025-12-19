@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.0.13
+
+### Patch Changes
+
+- 1071c8b: feat: enhance content change detection with detailed hash tracking and logging
+
 ## 0.0.12
 
 ### Patch Changes
