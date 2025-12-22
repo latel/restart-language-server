@@ -159,7 +159,12 @@ async function restartLanguageServers() {
 	await vscode.window.withProgress({
 		location: vscode.ProgressLocation.Notification,
 		title: title
-	}, async () => {
+	}, async (progress) => {
+		const progressMessage = eventsToReport.length > 0
+			? t('Triggered by: {0}', eventsToReport.map((evt) => `${formatPath(evt.path)} ${kindLabel[evt.kind]}`).join('; '))
+			: t('Triggered with no recorded file changes');
+		progress.report({ message: progressMessage });
+
 		const minDuration = new Promise((resolve) => setTimeout(resolve, 5000));
 		const commandExecution = async () => {
 			if (restartCommands.length > 0) {
@@ -172,8 +177,8 @@ async function restartLanguageServers() {
 				}
 			}
 		};
-			await Promise.all([minDuration, commandExecution()]);
-		});
+		await Promise.all([minDuration, commandExecution()]);
+	});
 }
 
 async function preloadFileHashes(includes: string[]) {
