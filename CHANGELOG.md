@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.0.14
+
+### Patch Changes
+
+- a814d99: feat: enhance restart progress reporting with detailed event information
+
 ## 0.0.13
 
 ### Patch Changes
