@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.0.15
+
+### Patch Changes
+
+- c5092b9: feat: update default includes to support .yalc package.json files
+
 ## 0.0.14
 
 ### Patch Changes
