@@ -19,7 +19,7 @@
 | :--- | :--- | :--- |
 | `restart-language-server.enable` | 启用/禁用此扩展。 | `true` |
 | `restart-language-server.debug` | 开启详细调试日志（记录触发的文件事件、监听器信息）。 | `false` |
-| `restart-language-server.includes` | 要监听的 glob 模式数组。<br> **示例：** `["**/auto-imports.d.ts", "**/components.d.ts"]` | `["package.json", "package-lock.json", "pnpm-lock.yaml"]` |
+| `restart-language-server.includes` | 要监听的 glob 模式数组。<br> **示例：** `["**/auto-imports.d.ts", "**/components.d.ts"]` | `["package.json", "package-lock.json", "pnpm-lock.yaml", ".yalc/**/package.json"]` |
 | `restart-language-server.lsRestartCommands` | 检测到变化时要执行的 VS Code 命令数组。<br> **示例：** `["typescript.restartTsServer", "eslint.restart"]` | `["typescript.restartTsServer"]` |
 
 ## 使用示例

@@ -7,7 +7,7 @@ let restartTimer: NodeJS.Timeout | undefined;
 let outputChannel: vscode.OutputChannel | undefined;
 let restartCommands: string[] = [];
 let debugEnabled = false;
-const DEFAULT_INCLUDES = ['package.json', 'package-lock.json', 'pnpm-lock.yaml'];
+const DEFAULT_INCLUDES = ['package.json', 'package-lock.json', 'pnpm-lock.yaml', '.yalc/**/package.json'];
 const fileHashCache = new Map<string, string>();
 
 const t = vscode.l10n.t;

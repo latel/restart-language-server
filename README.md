@@ -19,7 +19,7 @@ This extension contributes the following settings:
 | :--- | :--- | :--- |
 | `restart-language-server.enable` | Enable/disable this extension. | `true` |
 | `restart-language-server.debug` | Enable verbose debug logging (file events and watcher details). | `false` |
-| `restart-language-server.includes` | An array of glob patterns to watch. <br> **Example:** `["**/auto-imports.d.ts", "**/components.d.ts"]` | `["package.json", "package-lock.json", "pnpm-lock.yaml"]` |
+| `restart-language-server.includes` | An array of glob patterns to watch. <br> **Example:** `["**/auto-imports.d.ts", "**/components.d.ts"]` | `["package.json", "package-lock.json", "pnpm-lock.yaml", ".yalc/**/package.json"]` |
 | `restart-language-server.lsRestartCommands` | An array of VS Code commands to execute when a change is detected. <br> **Example:** `["typescript.restartTsServer", "eslint.restart"]` | `["typescript.restartTsServer"]` |
 
 ## Usage Example

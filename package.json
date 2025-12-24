@@ -40,7 +40,8 @@
           "default": [
             "package.json",
             "package-lock.json",
-            "pnpm-lock.yaml"
+            "pnpm-lock.yaml",
+            ".yalc/**/package.json"
           ],
           "description": "%config.includes.description%",
           "items": {
